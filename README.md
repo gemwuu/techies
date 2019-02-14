@@ -16,6 +16,7 @@ A dom number-values collector, this project is named after a dota hero, [techies
 1. collect all dom data.
 2. collect sample data.
 3. report data to data server.
+4. Scripts to generate sample pages and test this lib.
 
 ## License
 [MIT](http://opensource.org/licenses/MIT)
