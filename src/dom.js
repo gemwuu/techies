@@ -10,14 +10,11 @@ import {
   type,
   removeWhiteSpace,
   getNumbers,
+  getSelector,
 } from './util';
 
-
-const reportData = {
-  page: '',
-  status: '',
-  numbers: [],
-};
+const numbers = [];
+const selectors = new Map();
 
 export default function techies(dom) {
   if (type(dom) !== 'htmlbodyelement') {
@@ -26,43 +23,41 @@ export default function techies(dom) {
   }
 
   traverse(dom);
+  console.info('reportData: ', removeWhiteSpace(numbers));
+}
 
-  reportData.numbers = removeWhiteSpace(reportData.numbers);
-  let newArr = [];
-  reportData.numbers.forEach((item, index) => {
-    const arr = getNumbers(item);
-    if (arr) {
-      newArr = newArr.concat(arr);
+function traverse(node) {
+  const firstChild = node.firstChild;
+
+  let s = firstChild;
+  while (s) {
+    if (s.nodeType === 1) {
+      traverse(s);
+    } else if (s.nodeType === 3) {
+      const number = getNumbers(s.data);
+      if (number) {
+        const selector = getSelector(s.parentNode);
+        if (!selectors.has(selector)) {
+          number.forEach((item, index) => {
+            numbers.push({
+              selector: `${selector}-${index}`,
+              number: item,
+            });
+          });
+          selectors.set(selector, number.length);
+        } else {
+          const index = selectors.get(selector);
+          number.forEach((item, i) => {
+            numbers.push({
+              selector: `${selector}-${i + index}`,
+              number: item,
+            });
+          });
+          selectors.set(selector, index + number.length);
+        }
+      }
     }
-  });
-  reportData.numbers = newArr;
-  console.info('reportData: ', reportData);
-}
-
-function traverse(parent) {
-  // get node textContent
-  getNodeTextContent(parent);
-  const children = parent.children;
-  let l = children.length;
-
-  let child;
-  while (l > 0) {
-    child = children[l - 1];
-    traverse(child);
-    l--;
-  }
-}
-
-// get current node `textContent`
-function getNodeTextContent(node) {
-  const innerHTML = node.innerHTML.trim().replace(/\s/g, '');
-  if (node.children.length) {
-    const children = Array.from(node.children);
-    const reg = new RegExp(children.map(child => child.outerHTML.trim().replace(/\s/g, '')).join('|'));
-
-    const textContent = innerHTML.split(reg);
-    reportData.numbers = reportData.numbers.concat(textContent);
-  } else {
-    reportData.numbers.push(node.textContent);
+    const nextSibling = s.nextSibling;
+    s = nextSibling;
   }
 }

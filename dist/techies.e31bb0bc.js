@@ -113,6 +113,8 @@ Object.defineProperty(exports, "__esModule", {
 exports.type = type;
 exports.removeWhiteSpace = removeWhiteSpace;
 exports.getNumbers = getNumbers;
+exports.getSelector = getSelector;
+exports.getChildIndex = getChildIndex;
 
 function type(value) {
   return Object.prototype.toString.call(value).match(/\[object\ (.*)\]/)[1].toLowerCase();
@@ -126,9 +128,54 @@ function removeWhiteSpace(array) {
 }
 
 function getNumbers(str) {
-  var reg = /\d+/g;
-  console.info(str.match(reg));
-  return str.match(reg);
+  return str.match(/\d+/g);
+}
+
+function getSelector(node) {
+  // 非 dom 节点
+  if (type(node).indexOf('html') < 0) {
+    console.warn("[techies] error dom type: ".concat(type(node), ", need html element."));
+    return '';
+  }
+
+  if (type(node) === 'htmlhtmlelement') {
+    return 'html';
+  }
+
+  if (type(node) === 'htmlbodyelement') {
+    return 'body';
+  }
+
+  var selector = [];
+
+  var _node;
+
+  while (type(node) !== 'htmlbodyelement') {
+    selector.unshift(getParentSelector(node));
+    _node = node;
+    node = node.parentElement;
+  }
+
+  return "body ".concat(selector.join(''));
+}
+
+function getParentSelector(node) {
+  var parent = node.parentElement;
+  var siblings = parent.children;
+  var tagName = node.tagName.toLowerCase();
+
+  if (siblings && siblings.length === 1) {
+    return "> ".concat(tagName);
+  } else {
+    return "> ".concat(getChildIndex(node));
+  }
+}
+
+function getChildIndex(node) {
+  var parent = node.parentElement;
+  var tagName = node.tagName.toLowerCase();
+  var siblings = parent.children;
+  return ":nth-child(".concat(Array.prototype.indexOf.call(siblings, node) + 1, ")");
 }
 },{}],"src/dom.js":[function(require,module,exports) {
 'use strict';
@@ -146,11 +193,8 @@ exports.default = techies;
 
 var _util = require("./util");
 
-var reportData = {
-  page: '',
-  status: '',
-  numbers: []
-};
+var numbers = [];
+var selectors = new Map();
 
 function techies(dom) {
   if ((0, _util.type)(dom) !== 'htmlbodyelement') {
@@ -159,46 +203,47 @@ function techies(dom) {
   }
 
   traverse(dom);
-  reportData.numbers = (0, _util.removeWhiteSpace)(reportData.numbers);
-  var newArr = [];
-  reportData.numbers.forEach(function (item, index) {
-    var arr = (0, _util.getNumbers)(item);
-
-    if (arr) {
-      newArr = newArr.concat(arr);
-    }
-  });
-  reportData.numbers = newArr;
-  console.info('reportData: ', reportData);
+  console.info('reportData: ', (0, _util.removeWhiteSpace)(numbers));
 }
 
-function traverse(parent) {
-  // get node textContent
-  getNodeTextContent(parent);
-  var children = parent.children;
-  var l = children.length;
-  var child;
+function traverse(node) {
+  var firstChild = node.firstChild;
+  var s = firstChild;
 
-  while (l > 0) {
-    child = children[l - 1];
-    traverse(child);
-    l--;
-  }
-} // get current node `textContent`
+  while (s) {
+    if (s.nodeType === 1) {
+      traverse(s);
+    } else if (s.nodeType === 3) {
+      var number = (0, _util.getNumbers)(s.data);
 
+      if (number) {
+        (function () {
+          var selector = (0, _util.getSelector)(s.parentNode);
 
-function getNodeTextContent(node) {
-  var innerHTML = node.innerHTML.trim().replace(/\s/g, '');
+          if (!selectors.has(selector)) {
+            number.forEach(function (item, index) {
+              numbers.push({
+                selector: "".concat(selector, "-").concat(index),
+                number: item
+              });
+            });
+            selectors.set(selector, number.length);
+          } else {
+            var index = selectors.get(selector);
+            number.forEach(function (item, i) {
+              numbers.push({
+                selector: "".concat(selector, "-").concat(i + index),
+                number: item
+              });
+            });
+            selectors.set(selector, index + number.length);
+          }
+        })();
+      }
+    }
 
-  if (node.children.length) {
-    var children = Array.from(node.children);
-    var reg = new RegExp(children.map(function (child) {
-      return child.outerHTML.trim().replace(/\s/g, '');
-    }).join('|'));
-    var textContent = innerHTML.split(reg);
-    reportData.numbers = reportData.numbers.concat(textContent);
-  } else {
-    reportData.numbers.push(node.textContent);
+    var nextSibling = s.nextSibling;
+    s = nextSibling;
   }
 }
 },{"./util":"src/util.js"}],"index.js":[function(require,module,exports) {
