@@ -23,7 +23,7 @@ export default function techies(dom) {
   }
 
   traverse(dom);
-  console.info('reportData: ', removeWhiteSpace(numbers));
+  console.info(`[reportData]${JSON.stringify(removeWhiteSpace(numbers))}`);
   numbers = [];
 }
 
