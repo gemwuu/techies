@@ -4,3 +4,6 @@ node_modules
 coverage
 *.log
 .cache
+*.txt
+config/config.local.json
+scripts/*.json

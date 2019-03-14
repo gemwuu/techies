@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "parcel index.html --hmr-port 8080",
     "test": "nyc --reporter=text mocha",
-    "build": "parcel build index.js"
+    "build": "parcel build index.js",
+    "gen": "node scripts/browser.js",
+    "bg": "tnpm run build && node scripts/browser.js"
   },
   "repository": {
     "type": "git",
@@ -28,5 +30,8 @@
     "mocha": "^5.2.0",
     "nyc": "^13.2.0",
     "parcel-bundler": "^1.11.0"
+  },
+  "dependencies": {
+    "puppeteer": "^1.13.0"
   }
 }
