@@ -17,11 +17,12 @@ const DATA_PREFIX = '[reportData]';
 const MOCK_DATA_PATH = localConfig.mockDataPath || prodConfig.mockDataPath;
 const PRODUCTS = require(localConfig.sampleData || prodConfig.sampleData);
 
+function genRandomFloat(precision) {
+  return `${+new Date() % 2 ? '+' : '-'}` + Math.random().toFixed(precision);
+}
+
 function modifyData() {
   let shares = 0;
-  const prevDailyProfit = `${+new Date() % 2 ? '+' : '-'}` + Math.random().toFixed(2);
-  const holdingProfit = `${+new Date() % 2 ? '+' : '-'}` + Math.random().toFixed(2);
-  const totalProfit = `${+new Date() % 2 ? '+' : '-'}` + Math.random().toFixed(2);
   const holdingProducts = PRODUCTS.slice(0, +new Date() % 3 + 1).map(item => {
     const share = Math.random().toFixed(4);
     item.share = share;
@@ -34,9 +35,9 @@ function modifyData() {
     shares += 0.0010;
   }
   jsonData.totalShare = shares;
-  jsonData.prevDailyProfit = `${+new Date() % 2 ? '+' : '-'}` + Math.random().toFixed(2);
-  jsonData.holdingProfit = `${+new Date() % 2 ? '+' : '-'}` + Math.random().toFixed(2);
-  jsonData.totalProfit = `${+new Date() % 2 ? '+' : '-'}` + Math.random().toFixed(2);
+  jsonData.prevDailyProfit = genRandomFloat(2);
+  jsonData.holdingProfit = genRandomFloat(2);
+  jsonData.totalProfit = genRandomFloat(2);
   jsonData.holdingProducts = holdingProducts;
 
   fs.writeFileSync(MOCK_DATA_PATH, JSON.stringify(jsonData) + '\n', err => {
