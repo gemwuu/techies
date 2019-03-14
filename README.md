@@ -9,7 +9,6 @@ A dom number-values collector, this project is named after a dota hero, [techies
 5. Press `⌘+R` to refresh current page, you'll get the result.
 
 ## Known issues
-[#1](https://github.com/gemwuu/techies/issues/1)
 [#2](https://github.com/gemwuu/techies/issues/2)
 
 ## Roadmap
