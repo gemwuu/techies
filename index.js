@@ -9,4 +9,6 @@
 // module.exports = exports = require('./src/dom.js');
 import traverse from './src/dom';
 
-traverse(document.body);
+window.Traverse = traverse;
+// traverse(document.body);
+export default traverse;
