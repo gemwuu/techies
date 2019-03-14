@@ -2,7 +2,13 @@ const puppeteer = require('puppeteer');
 const fs = require('fs');
 
 const prodConfig = require('../config/config.prod.json');
-const localConfig = require('../config/config.local.json');
+let localConfig = {};
+
+try {
+  localConfig = require('../config/config.local.json');
+} catch (e) {
+  console.warn('config.local.json file not found, use config.prod.json instead');
+}
 
 const jsonData = require(localConfig.jsonData || prodConfig.jsonData);
 
