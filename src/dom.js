@@ -13,7 +13,7 @@ import {
   getSelector,
 } from './util';
 
-const numbers = [];
+let numbers = [];
 const selectors = new Map();
 
 export default function techies(dom) {
@@ -24,6 +24,7 @@ export default function techies(dom) {
 
   traverse(dom);
   console.info('reportData: ', removeWhiteSpace(numbers));
+  numbers = [];
 }
 
 function traverse(node) {

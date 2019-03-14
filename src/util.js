@@ -10,8 +10,9 @@ export function removeWhiteSpace(array) {
   return array.filter(item => !dirtyData.includes(item));
 }
 
+// 匹配小数和整数。带符号
 export function getNumbers(str) {
-  return str.match(/\d+/g);
+  return str.match(/([+-]?[0-9]{1,}[.][0-9]*)|[+-]?[0-9]{1,}/g);
 }
 
 export function getSelector(node) {
