@@ -48,7 +48,7 @@ function getParentSelector(node) {
   const tagName = node.tagName.toLowerCase();
 
   if (siblings && siblings.length === 1) {
-    return `> ${tagName}`;
+    return `> ${tagName}${addAttr(node)}`;
   } else {
     return `> ${getChildIndex(node)}`;
   }
@@ -56,8 +56,15 @@ function getParentSelector(node) {
 
 export function getChildIndex(node) {
   const parent = node.parentElement;
-  const tagName = node.tagName.toLowerCase();
   const siblings = parent.children;
+  const tagName = node.tagName.toLowerCase();
 
-  return `:nth-child(${Array.prototype.indexOf.call(siblings, node) + 1})`;
+  return `${tagName}:nth-child(${Array.prototype.indexOf.call(siblings, node) + 1})${addAttr(node)}`;
+}
+
+function addAttr(node) {
+  const className = node.attributes.class ? `.${node.attributes.class.value}` : '';
+  const id = node.attributes.id ? `#${node.attributes.id.value}` : '';
+  console.info(node, className, id);
+  return `${className}${id}`;
 }
