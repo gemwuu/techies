@@ -7,3 +7,4 @@ coverage
 *.txt
 config/config.local.json
 scripts/*.json
+.idea/
