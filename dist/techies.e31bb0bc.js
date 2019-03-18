@@ -128,22 +128,26 @@ exports.removeWhiteSpace = removeWhiteSpace;
 exports.getNumbers = getNumbers;
 exports.getSelector = getSelector;
 exports.getChildIndex = getChildIndex;
+// 同一个 class 或 id，出现多次需要手动加索引
+var attrs = new Map(); // 获取当前节点的类型
 
 function type(value) {
   return Object.prototype.toString.call(value).match(/\[object\ (.*)\]/)[1].toLowerCase();
-}
+} // 去掉节点里面的脏数据
+
 
 function removeWhiteSpace(array) {
   var dirtyData = ['', ' '];
   return array.filter(function (item) {
     return !dirtyData.includes(item);
   });
-} // 匹配小数和整数。带符号
+} // 匹配小数和整数，带符号
 
 
 function getNumbers(str) {
   return str.match(/([+-]?[0-9]{1,}[.][0-9]*)|[+-]?[0-9]{1,}/g);
-}
+} // 获取当前节点基于选择器的唯一标识符
+
 
 function getSelector(node) {
   // 非 dom 节点
@@ -170,8 +174,9 @@ function getSelector(node) {
     node = node.parentElement;
   }
 
-  return "body ".concat(selector.join(''));
-}
+  return "body".concat(selector.join(''));
+} // 获取父节点的选择器
+
 
 function getParentSelector(node) {
   var parent = node.parentElement;
@@ -179,26 +184,62 @@ function getParentSelector(node) {
   var tagName = node.tagName.toLowerCase();
 
   if (siblings && siblings.length === 1) {
-    return "> ".concat(tagName);
+    return ">".concat(tagName).concat(addAttr(node));
   } else {
-    return "> ".concat(getChildIndex(node));
+    return ">".concat(getChildIndex(node));
   }
-}
+} // 获取当前节点在父节点中的索引
+
 
 function getChildIndex(node) {
   var parent = node.parentElement;
-  var tagName = node.tagName.toLowerCase();
   var siblings = parent.children;
-  return ":nth-child(".concat(Array.prototype.indexOf.call(siblings, node) + 1, ")");
+  var tagName = node.tagName.toLowerCase();
+  return "".concat(tagName).concat(addAttr(node), ":nth-child(").concat(Array.prototype.indexOf.call(siblings, node) + 1, ")");
+} // 将当前节点的 class 和 id 都加到选择器中
+
+
+function addAttr(node) {
+  return "".concat(getClassName(node)).concat(getId(node));
+}
+
+function getClassName(node) {
+  var className = node.attributes.class ? ".".concat(node.attributes.class.value.replace(' ', '.')) : '';
+  console.info('className: ', className, attrs);
+
+  if (className) {
+    var index = 0;
+
+    if (attrs.has(className)) {
+      index = attrs.get(className) + 1;
+    }
+
+    attrs.set(className, index);
+    className = "".concat(className, "-").concat(index);
+  }
+
+  return className;
+}
+
+function getId(node) {
+  var id = node.attributes.id ? "#".concat(node.attributes.id.value) : '';
+  console.info('id: ', id, attrs);
+
+  if (id) {
+    var index = 0;
+
+    if (attrs.has(id)) {
+      index = attrs.get(id) + 1;
+    }
+
+    attrs.set(id, index);
+    id = "".concat(id, "-").concat(index);
+  }
+
+  return id;
 }
 },{}],"src/dom.js":[function(require,module,exports) {
-'use strict';
-/**
- * @author: tianding.wk
- * @createdTime: 2019-02-11 20:57:18
- * @fileName: dom.js
- * @description: process dom to get all number values
- **/
+"use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -207,7 +248,9 @@ exports.default = techies;
 
 var _util = require("./util");
 
-var numbers = [];
+// 数据集合
+var numbers = []; // 选择器集合，一个节点有多个 TEXT_NODE 需要手动加索引
+
 var selectors = new Map();
 
 function techies(dom) {
@@ -216,24 +259,25 @@ function techies(dom) {
     return;
   }
 
-  traverse(dom);
-  console.info('reportData: ', (0, _util.removeWhiteSpace)(numbers));
+  recursive(dom);
+  console.info("[reportData]".concat(JSON.stringify((0, _util.removeWhiteSpace)(numbers.slice(0, 15)))));
   numbers = [];
-}
+} // 递归遍历特定节点
 
-function traverse(node) {
-  var firstChild = node.firstChild;
-  var s = firstChild;
 
-  while (s) {
-    if (s.nodeType === 1) {
-      traverse(s);
-    } else if (s.nodeType === 3) {
-      var number = (0, _util.getNumbers)(s.data);
+function recursive(node) {
+  var el = node.firstChild;
+
+  while (el) {
+    // ELEMENT_NODE
+    if (el.nodeType === 1) {
+      recursive(el); // TEXT_NODE
+    } else if (el.nodeType === 3) {
+      var number = (0, _util.getNumbers)(el.data); // 此处根据是否是数字判断是否继续进行后续处理
 
       if (number) {
         (function () {
-          var selector = (0, _util.getSelector)(s.parentNode);
+          var selector = (0, _util.getSelector)(el.parentNode); // 如果 selector 不重复
 
           if (!selectors.has(selector)) {
             number.forEach(function (item, index) {
@@ -242,7 +286,7 @@ function traverse(node) {
                 number: item
               });
             });
-            selectors.set(selector, number.length);
+            selectors.set(selector, number.length); // 如果 selector 重复，手动增加索引
           } else {
             var index = selectors.get(selector);
             number.forEach(function (item, i) {
@@ -257,19 +301,12 @@ function traverse(node) {
       }
     }
 
-    var nextSibling = s.nextSibling;
-    s = nextSibling;
+    var nextSibling = el.nextSibling;
+    el = nextSibling;
   }
 }
 },{"./util":"src/util.js"}],"index.js":[function(require,module,exports) {
-'use strict';
-/**
- * @author: tianding.wk
- * @createdTime: 2019-02-11 20:56:19
- * @fileName: index.js
- * @description: entry file
- **/
-// module.exports = exports = require('./src/dom.js');
+"use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -280,8 +317,8 @@ var _dom = _interopRequireDefault(require("./src/dom"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-window.Traverse = _dom.default; // traverse(document.body);
-
+window.Traverse = _dom.default;
+(0, _dom.default)(document.body);
 var _default = _dom.default;
 exports.default = _default;
 },{"./src/dom":"src/dom.js"}],"node_modules/_parcel-bundler@1.12.1@parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {

@@ -1,11 +1,3 @@
-'use strict';
-/**
- * @author: tianding.wk
- * @createdTime: 2019-02-11 20:57:18
- * @fileName: dom.js
- * @description: process dom to get all number values
- **/
-
 import {
   type,
   removeWhiteSpace,
@@ -13,7 +5,10 @@ import {
   getSelector,
 } from './util';
 
+// 数据集合
 let numbers = [];
+
+// 选择器集合，一个节点有多个 TEXT_NODE 需要手动加索引
 const selectors = new Map();
 
 export default function techies(dom) {
@@ -22,22 +17,26 @@ export default function techies(dom) {
     return;
   }
 
-  traverse(dom);
-  console.info(`[reportData]${JSON.stringify(removeWhiteSpace(numbers))}`);
+  recursive(dom);
+  console.info(`[reportData]${JSON.stringify(removeWhiteSpace(numbers.slice(0, 15)))}`);
   numbers = [];
 }
 
-function traverse(node) {
-  const firstChild = node.firstChild;
+// 递归遍历特定节点
+function recursive(node) {
+  let el = node.firstChild;
 
-  let s = firstChild;
-  while (s) {
-    if (s.nodeType === 1) {
-      traverse(s);
-    } else if (s.nodeType === 3) {
-      const number = getNumbers(s.data);
+  while (el) {
+    // ELEMENT_NODE
+    if (el.nodeType === 1) {
+      recursive(el);
+    // TEXT_NODE
+    } else if (el.nodeType === 3) {
+      const number = getNumbers(el.data);
+      // 此处根据是否是数字判断是否继续进行后续处理
       if (number) {
-        const selector = getSelector(s.parentNode);
+        const selector = getSelector(el.parentNode);
+        // 如果 selector 不重复
         if (!selectors.has(selector)) {
           number.forEach((item, index) => {
             numbers.push({
@@ -46,6 +45,7 @@ function traverse(node) {
             });
           });
           selectors.set(selector, number.length);
+        // 如果 selector 重复，手动增加索引
         } else {
           const index = selectors.get(selector);
           number.forEach((item, i) => {
@@ -58,7 +58,7 @@ function traverse(node) {
         }
       }
     }
-    const nextSibling = s.nextSibling;
-    s = nextSibling;
+    const nextSibling = el.nextSibling;
+    el = nextSibling;
   }
 }

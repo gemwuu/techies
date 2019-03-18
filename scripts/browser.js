@@ -30,9 +30,9 @@ function modifyData() {
     return item;
   });
 
-  if (Math.random() <= 0.1) {
-    console.info('error data');
+  if (Math.random() <= 0.05) {
     shares += 0.0010;
+    console.info('error data: ', shares);
   }
   jsonData.totalShare = shares;
   jsonData.prevDailyProfit = genRandomFloat(2);
@@ -66,6 +66,7 @@ puppeteer.launch().then(async browser => {
   });
 
   setInterval(() => {
+  // setTimeout(() => {
     modifyData();
     page.reload();
   }, 5000);
