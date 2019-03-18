@@ -77,28 +77,34 @@ function addAttr(node) {
 
 function getClassName(node) {
   let className = node.attributes.class ? `.${node.attributes.class.value.replace(' ', '.')}` : '';
-  if (className) {
-    let index = 0;
-    if (attrs.has(className)) {
-      index = attrs.get(className) + 1;
-    }
-    attrs.set(className, index);
-    className = `${className}-${index}`;
+
+  if (!className) {
+    return '';
   }
+
+  let index = 0;
+  if (attrs.has(className)) {
+    index = attrs.get(className) + 1;
+  }
+  attrs.set(className, index);
+  className = `${className}-${index}`;
 
   return className;
 }
 
 function getId(node) {
   let id = node.attributes.id ? `#${node.attributes.id.value}` : '';
-  if (id) {
-    let index = 0;
-    if (attrs.has(id)) {
-      index = attrs.get(id) + 1;
-    }
-    attrs.set(id, index);
-    id = `${id}-${index}`;
+
+  if (!id) {
+    return '';
   }
+
+  let index = 0;
+  if (attrs.has(id)) {
+    index = attrs.get(id) + 1;
+  }
+  attrs.set(id, index);
+  id = `${id}-${index}`;
 
   return id;
 }
