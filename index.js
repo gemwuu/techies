@@ -1,5 +1,5 @@
-import traverse from './src/dom';
+import techies from './src/dom';
 
-window.Traverse = traverse;
-// traverse(document.body);
-export default traverse;
+window.Techies = techies;
+// techies(document.body);
+export default techies;
